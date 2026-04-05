@@ -1,4 +1,4 @@
-package com.vitordev.ticket.infra;
+package com.vitordev.ticket.shared;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

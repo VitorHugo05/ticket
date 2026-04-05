@@ -3,10 +3,11 @@ package com.vitordev.ticket.events.services;
 import com.vitordev.ticket.events.messaging.RabbitMqConfig;
 import com.vitordev.ticket.events.model.dto.EventMessage;
 import com.vitordev.ticket.events.model.dto.EventRequestDto;
-import com.vitordev.ticket.events.model.dto.EventResponseDto;
 import com.vitordev.ticket.events.model.dto.EventUpdateRequestDto;
 import com.vitordev.ticket.events.model.entities.EventEntity;
 import com.vitordev.ticket.events.repository.EventRepository;
+import com.vitordev.ticket.shared.exceptions.BadRequestArgumentException;
+import com.vitordev.ticket.shared.exceptions.ObjectNotFoundException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,11 +26,11 @@ public class EventService {
     public EventEntity insert(EventRequestDto eventRequestDto) {
 
         if(eventRequestDto.getStartTime().isBefore(LocalDateTime.now())) {
-            throw new RuntimeException("Start time cannot be in the past");
+            throw new BadRequestArgumentException("Start time cannot be in the past");
         }
 
         if(eventRequestDto.getEndTime().isBefore(eventRequestDto.getStartTime())) {
-            throw new RuntimeException("End time must be after start time");
+            throw new BadRequestArgumentException("End time must be after start time");
         }
 
         EventEntity eventEntity = new EventEntity();
@@ -66,7 +67,7 @@ public class EventService {
     }
 
     public EventEntity findById(Long id) {
-        return eventRepository.findById(id).orElseThrow(() -> new RuntimeException("Object not found"));
+        return eventRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Object not found"));
     }
 
     public void update(Long id, EventUpdateRequestDto eventUpdateRequestDto) {
