@@ -1,4 +1,4 @@
-package com.vitordev.ticket.shared;
+package com.vitordev.ticket.shared.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -1,6 +1,6 @@
 package com.vitordev.ticket.events.services;
 
-import com.vitordev.ticket.events.messaging.RabbitMqConfig;
+import com.vitordev.ticket.events.messaging.RabbitMqEvent;
 import com.vitordev.ticket.events.model.dto.EventMessage;
 import com.vitordev.ticket.events.model.dto.EventRequestDto;
 import com.vitordev.ticket.events.model.dto.EventUpdateRequestDto;
@@ -56,8 +56,8 @@ public class EventService {
         );
 
         rabbitTemplate.convertAndSend(
-                RabbitMqConfig.EVENT_CREATED_EXCHANGE,
-                RabbitMqConfig.EVENT_CREATED_ROUTING_KEY,
+                RabbitMqEvent.EVENT_CREATED_EXCHANGE,
+                RabbitMqEvent.EVENT_CREATED_ROUTING_KEY,
                 message
         );
     }
