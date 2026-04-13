@@ -4,6 +4,7 @@ import com.vitordev.ticket.orders.model.IdempotencyKeyEntity;
 import com.vitordev.ticket.orders.model.OrderEntity;
 import com.vitordev.ticket.orders.model.dto.OrderMessage;
 import com.vitordev.ticket.orders.model.dto.OrderRequestDto;
+import com.vitordev.ticket.orders.model.dto.OrderResponseDto;
 import com.vitordev.ticket.orders.model.enums.OrderStatus;
 import com.vitordev.ticket.orders.repository.IdempotencyRepository;
 import com.vitordev.ticket.orders.repository.OrderRepository;
@@ -48,11 +49,12 @@ public class OrderService {
         }
 
         String redisKey = "event:" + request.getEventId() + ":available";
-        Long remaining = jedis.decrBy(redisKey, request.getQuantity());
 
         if (!jedis.exists(redisKey)) {
             throw new RuntimeException("Event not found or not available");
         }
+
+        Long remaining = jedis.decrBy(redisKey, request.getQuantity());
 
         if (remaining < 0) {
             jedis.incrBy(redisKey, request.getQuantity());
@@ -87,5 +89,34 @@ public class OrderService {
                         savedOrder.getExpiresAt()));
 
         return savedOrder;
+    }
+
+
+    public OrderResponseDto findById(Long id) {
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found or not available"));
+        return toDto(orderEntity);
+    }
+
+    public List<OrderResponseDto> findAll() {
+        List<OrderEntity> orderEntityList = orderRepository.findAll();
+        List<OrderResponseDto> orderResponseDtoList = orderEntityList.stream()
+                .map(this::toDto)
+                .toList();
+        return orderResponseDtoList;
+    }
+
+    private OrderResponseDto toDto(OrderEntity orderEntity){
+        OrderResponseDto orderResponseDto = new OrderResponseDto();
+
+        orderResponseDto.setCreatedAt(orderEntity.getCreatedAt());
+        orderResponseDto.setQuantity(orderEntity.getQuantity());
+        orderResponseDto.setExpiresAt(orderEntity.getExpiresAt());
+        orderResponseDto.setUpdatedAt(orderEntity.getUpdatedAt());
+        orderResponseDto.setStatus(orderEntity.getStatus());
+        orderResponseDto.setEventId(orderEntity.getEventId());
+        orderResponseDto.setUserId(orderEntity.getUserId());
+        orderResponseDto.setId(orderEntity.getId());
+
+        return orderResponseDto;
     }
 }
