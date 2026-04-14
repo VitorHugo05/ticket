@@ -5,6 +5,7 @@ import com.vitordev.ticket.orders.model.OrderEntity;
 import com.vitordev.ticket.orders.model.dto.OrderMessage;
 import com.vitordev.ticket.orders.model.dto.OrderRequestDto;
 import com.vitordev.ticket.orders.model.dto.OrderResponseDto;
+import com.vitordev.ticket.orders.model.dto.OrderUpdateRequestDto;
 import com.vitordev.ticket.orders.model.enums.OrderStatus;
 import com.vitordev.ticket.orders.repository.IdempotencyRepository;
 import com.vitordev.ticket.orders.repository.OrderRepository;
@@ -93,7 +94,7 @@ public class OrderService {
 
 
     public OrderResponseDto findById(Long id) {
-        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Event not found or not available"));
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found or not available"));
         return toDto(orderEntity);
     }
 
@@ -118,5 +119,41 @@ public class OrderService {
         orderResponseDto.setId(orderEntity.getId());
 
         return orderResponseDto;
+    }
+
+    public void update(Long id, OrderUpdateRequestDto request) {
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+
+        String redisKey = "event:" + order.getEventId() + ":available";
+
+        int oldQuantity = order.getQuantity();
+        int newQuantity = request.getQuantity();
+
+        int diff = newQuantity - oldQuantity;
+
+        if (diff < 0) {
+            jedis.incrBy(redisKey, Math.abs(diff));
+        }
+
+        else if (diff > 0) {
+            Long remaining = jedis.decrBy(redisKey, diff);
+            if (remaining < 0) {
+                jedis.incrBy(redisKey, diff);
+                throw new RuntimeException("No stock available");
+            }
+        }
+        order.setQuantity(newQuantity);
+        order.setUpdatedAt(LocalDateTime.now());
+
+        orderRepository.save(order);
+    }
+
+    public void delete(Long id) {
+        OrderEntity order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        String redisKey = "event:" + order.getEventId() + ":available";
+        jedis.incrBy(redisKey, order.getQuantity());
+        orderRepository.deleteById(id);
     }
 }

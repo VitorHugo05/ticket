@@ -3,6 +3,7 @@ package com.vitordev.ticket.orders.controllers;
 import com.vitordev.ticket.orders.model.OrderEntity;
 import com.vitordev.ticket.orders.model.dto.OrderRequestDto;
 import com.vitordev.ticket.orders.model.dto.OrderResponseDto;
+import com.vitordev.ticket.orders.model.dto.OrderUpdateRequestDto;
 import com.vitordev.ticket.orders.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -37,5 +38,17 @@ public class OrderController {
     public ResponseEntity<List<OrderResponseDto>> findAll() {
         List<OrderResponseDto> orderResponseDtoList = orderService.findAll();
         return ResponseEntity.ok().body(orderResponseDtoList);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> update(@PathVariable Long id, @RequestBody OrderUpdateRequestDto orderUpdateRequestDto){
+        orderService.update(id, orderUpdateRequestDto);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable Long id){
+        orderService.delete(id);
+        return ResponseEntity.noContent().build();
     }
 }
