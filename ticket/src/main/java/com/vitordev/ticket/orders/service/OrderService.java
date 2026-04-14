@@ -2,7 +2,7 @@ package com.vitordev.ticket.orders.service;
 
 import com.vitordev.ticket.orders.model.IdempotencyKeyEntity;
 import com.vitordev.ticket.orders.model.OrderEntity;
-import com.vitordev.ticket.orders.model.dto.OrderMessage;
+import com.vitordev.ticket.orders.model.dto.OrderCreatedMessage;
 import com.vitordev.ticket.orders.model.dto.OrderRequestDto;
 import com.vitordev.ticket.orders.model.dto.OrderResponseDto;
 import com.vitordev.ticket.orders.model.dto.OrderUpdateRequestDto;
@@ -85,7 +85,7 @@ public class OrderService {
         idempotencyRepository.save(newKey);
 
         rabbitTemplate.convertAndSend("order.created.exchange", "order.created",
-                new OrderMessage(savedOrder.getId(), savedOrder.getEventId(),
+                new OrderCreatedMessage(savedOrder.getId(), savedOrder.getEventId(),
                         savedOrder.getUserId(), savedOrder.getQuantity(),
                         savedOrder.getExpiresAt()));
 

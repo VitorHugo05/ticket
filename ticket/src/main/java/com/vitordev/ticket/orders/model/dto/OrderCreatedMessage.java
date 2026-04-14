@@ -3,7 +3,7 @@ package com.vitordev.ticket.orders.model.dto;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 
-public class OrderMessage implements Serializable {
+public class OrderCreatedMessage implements Serializable {
     private Long id;
 
     private Long userId;
@@ -12,7 +12,7 @@ public class OrderMessage implements Serializable {
 
     private LocalDateTime expiresAt;
 
-    public OrderMessage(Long id, Long userId, Long eventId, Integer quantity, LocalDateTime expiresAt) {
+    public OrderCreatedMessage(Long id, Long userId, Long eventId, Integer quantity, LocalDateTime expiresAt) {
         this.id = id;
         this.userId = userId;
         this.eventId = eventId;
@@ -20,7 +20,7 @@ public class OrderMessage implements Serializable {
         this.expiresAt = expiresAt;
     }
 
-    public OrderMessage() {
+    public OrderCreatedMessage() {
     }
 
     public Long getId() {
