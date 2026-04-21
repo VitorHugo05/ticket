@@ -15,6 +15,7 @@ public class EventEntity {
     private String description;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Double ticketPrice;
 
     @Column(nullable = false)
     private Integer capacity;
@@ -22,14 +23,23 @@ public class EventEntity {
     @Column(nullable = false)
     private Integer sold = 0;
 
-    public EventEntity(Long id, String name, String description, LocalDateTime startTime, LocalDateTime endTime, Integer capacity, Integer sold) {
+    public EventEntity(Long id, String name, String description, LocalDateTime startTime, LocalDateTime endTime, Double ticketPrice, Integer capacity, Integer sold) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.ticketPrice = ticketPrice;
         this.capacity = capacity;
         this.sold = sold;
+    }
+
+    public Double getTicketPrice() {
+        return ticketPrice;
+    }
+
+    public void setTicketPrice(Double ticketPrice) {
+        this.ticketPrice = ticketPrice;
     }
 
     public EventEntity() {

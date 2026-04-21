@@ -15,6 +15,7 @@ public class OrderEntity {
 
     private Long userId;
     private Long eventId;
+    private Double price;
     private Integer quantity;
 
     private LocalDateTime createdAt;
@@ -24,9 +25,10 @@ public class OrderEntity {
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
-    public OrderEntity(Long userId, Long eventId, Integer quantity, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt, OrderStatus status) {
+    public OrderEntity(Long userId, Long eventId, Double price, Integer quantity, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt, OrderStatus status) {
         this.userId = userId;
         this.eventId = eventId;
+        this.price = price;
         this.quantity = quantity;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -35,6 +37,20 @@ public class OrderEntity {
     }
 
     public OrderEntity() {
+    }
+
+
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public Long getId() {
@@ -95,5 +111,20 @@ public class OrderEntity {
 
     public void setStatus(OrderStatus status) {
         this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "OrderEntity{" +
+                "id=" + id +
+                ", userId=" + userId +
+                ", eventId=" + eventId +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                ", expiresAt=" + expiresAt +
+                ", status=" + status +
+                '}';
     }
 }

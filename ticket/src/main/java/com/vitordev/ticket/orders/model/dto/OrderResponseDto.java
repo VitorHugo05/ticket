@@ -9,6 +9,7 @@ public class OrderResponseDto {
     private Long userId;
     private Long eventId;
     private Integer quantity;
+    private Double price;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private LocalDateTime expiresAt;
@@ -17,15 +18,24 @@ public class OrderResponseDto {
     public OrderResponseDto() {
     }
 
-    public OrderResponseDto(Long id, OrderStatus status, LocalDateTime expiresAt, LocalDateTime updatedAt, LocalDateTime createdAt, Integer quantity, Long eventId, Long userId) {
+    public OrderResponseDto(Long id, Long userId, Long eventId, Integer quantity, Double price, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt, OrderStatus status) {
         this.id = id;
-        this.status = status;
-        this.expiresAt = expiresAt;
-        this.updatedAt = updatedAt;
-        this.createdAt = createdAt;
-        this.quantity = quantity;
-        this.eventId = eventId;
         this.userId = userId;
+        this.eventId = eventId;
+        this.quantity = quantity;
+        this.price = price;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+        this.expiresAt = expiresAt;
+        this.status = status;
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public Long getId() {

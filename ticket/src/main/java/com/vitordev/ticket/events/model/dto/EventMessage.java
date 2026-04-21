@@ -1,7 +1,11 @@
 package com.vitordev.ticket.events.model.dto;
 
 
-public class EventMessage {
+import java.io.Serializable;
+
+public class EventMessage implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     private Long id;
 
     private Integer capacity;
@@ -12,6 +16,9 @@ public class EventMessage {
         this.id = id;
         this.capacity = capacity;
         this.sold = sold;
+    }
+
+    public EventMessage() {
     }
 
     public Long getId() {

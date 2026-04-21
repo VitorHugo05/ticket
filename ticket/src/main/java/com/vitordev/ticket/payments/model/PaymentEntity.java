@@ -1,10 +1,8 @@
 package com.vitordev.ticket.payments.model;
 
-import com.vitordev.ticket.payments.model.enums.PaymentMethod;
 import com.vitordev.ticket.payments.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -16,10 +14,7 @@ public class PaymentEntity {
 
     private Long orderId;
 
-    private BigDecimal amount;
-
-    @Enumerated(EnumType.STRING)
-    private PaymentMethod method;
+    private Double amount;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
@@ -32,11 +27,10 @@ public class PaymentEntity {
     public PaymentEntity() {
     }
 
-    public PaymentEntity(Long id, Long orderId, BigDecimal amount, PaymentMethod method, PaymentStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt) {
+    public PaymentEntity(Long id, Long orderId, Double amount, PaymentStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt) {
         this.id = id;
         this.orderId = orderId;
         this.amount = amount;
-        this.method = method;
         this.status = status;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
@@ -59,20 +53,12 @@ public class PaymentEntity {
         this.orderId = orderId;
     }
 
-    public BigDecimal getAmount() {
+    public Double getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(Double amount) {
         this.amount = amount;
-    }
-
-    public PaymentMethod getMethod() {
-        return method;
-    }
-
-    public void setMethod(PaymentMethod method) {
-        this.method = method;
     }
 
     public PaymentStatus getStatus() {

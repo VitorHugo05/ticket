@@ -9,18 +9,28 @@ public class OrderCreatedMessage implements Serializable {
     private Long userId;
     private Long eventId;
     private Integer quantity;
+    private Double price;
 
     private LocalDateTime expiresAt;
 
-    public OrderCreatedMessage(Long id, Long userId, Long eventId, Integer quantity, LocalDateTime expiresAt) {
+    public OrderCreatedMessage(Long id, Long userId, Long eventId, Integer quantity, Double price, LocalDateTime expiresAt) {
         this.id = id;
         this.userId = userId;
         this.eventId = eventId;
         this.quantity = quantity;
+        this.price = price;
         this.expiresAt = expiresAt;
     }
 
     public OrderCreatedMessage() {
+    }
+
+    public Double getPrice() {
+        return price;
+    }
+
+    public void setPrice(Double price) {
+        this.price = price;
     }
 
     public Long getId() {

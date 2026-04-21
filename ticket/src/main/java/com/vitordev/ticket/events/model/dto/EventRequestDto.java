@@ -7,18 +7,28 @@ public class EventRequestDto {
     private String description;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
+    private Double ticketPrice;
 
     private Integer tickets;
 
-    public EventRequestDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime, Integer tickets) {
+    public EventRequestDto(String name, String description, LocalDateTime startTime, LocalDateTime endTime, Double ticketPrice, Integer tickets) {
         this.name = name;
         this.description = description;
         this.startTime = startTime;
         this.endTime = endTime;
+        this.ticketPrice = ticketPrice;
         this.tickets = tickets;
     }
 
     public EventRequestDto() {
+    }
+
+    public Double getTicketPrice() {
+        return ticketPrice;
+    }
+
+    public void setTicketPrice(Double ticketPrice) {
+        this.ticketPrice = ticketPrice;
     }
 
     public String getName() {

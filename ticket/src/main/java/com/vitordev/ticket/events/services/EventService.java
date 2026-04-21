@@ -40,6 +40,7 @@ public class EventService {
         eventEntity.setStartTime(eventRequestDto.getStartTime());
         eventEntity.setEndTime(eventRequestDto.getEndTime());
         eventEntity.setCapacity(eventRequestDto.getTickets());
+        eventEntity.setTicketPrice(eventRequestDto.getTicketPrice());
 
         eventRepository.save(eventEntity);
 

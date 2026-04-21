@@ -2,10 +2,7 @@ package com.vitordev.ticket.orders.service;
 
 import com.vitordev.ticket.orders.model.IdempotencyKeyEntity;
 import com.vitordev.ticket.orders.model.OrderEntity;
-import com.vitordev.ticket.orders.model.dto.OrderCreatedMessage;
-import com.vitordev.ticket.orders.model.dto.OrderRequestDto;
-import com.vitordev.ticket.orders.model.dto.OrderResponseDto;
-import com.vitordev.ticket.orders.model.dto.OrderUpdateRequestDto;
+import com.vitordev.ticket.orders.model.dto.*;
 import com.vitordev.ticket.orders.model.enums.OrderStatus;
 import com.vitordev.ticket.orders.repository.IdempotencyRepository;
 import com.vitordev.ticket.orders.repository.OrderRepository;
@@ -42,8 +39,24 @@ public class OrderService {
         }
     }
 
+    public EventDto getEvent(Long id){
+        Object response = rabbitTemplate.convertSendAndReceive(
+                "event.exchange",
+                "event",
+                id
+        );
+
+        String json = objectMapper.writeValueAsString(response);
+
+        EventDto eventDto = objectMapper.readValue(json, EventDto.class);
+        System.out.println(eventDto.toString());
+        return eventDto;
+    }
+
     @Transactional
     public OrderEntity createOrder(String key, OrderRequestDto request) {
+
+        EventDto eventDto = getEvent(request.getEventId());
 
         if (idempotencyRepository.findByIdempotencyKey(key).isPresent()) {
             throw new RuntimeException("Request already processed with this idempotency key");
@@ -65,6 +78,7 @@ public class OrderService {
         OrderEntity newOrder = new OrderEntity(
                 request.getUserId(),
                 request.getEventId(),
+                eventDto.getTicketPrice(),
                 request.getQuantity(),
                 LocalDateTime.now(),
                 LocalDateTime.now(),
@@ -86,7 +100,7 @@ public class OrderService {
 
         rabbitTemplate.convertAndSend("order.created.exchange", "order.created",
                 new OrderCreatedMessage(savedOrder.getId(), savedOrder.getEventId(),
-                        savedOrder.getUserId(), savedOrder.getQuantity(),
+                        savedOrder.getUserId(), savedOrder.getQuantity(), savedOrder.getPrice(),
                         savedOrder.getExpiresAt()));
 
         return savedOrder;
@@ -111,6 +125,7 @@ public class OrderService {
 
         orderResponseDto.setCreatedAt(orderEntity.getCreatedAt());
         orderResponseDto.setQuantity(orderEntity.getQuantity());
+        orderResponseDto.setPrice(orderEntity.getPrice());
         orderResponseDto.setExpiresAt(orderEntity.getExpiresAt());
         orderResponseDto.setUpdatedAt(orderEntity.getUpdatedAt());
         orderResponseDto.setStatus(orderEntity.getStatus());
