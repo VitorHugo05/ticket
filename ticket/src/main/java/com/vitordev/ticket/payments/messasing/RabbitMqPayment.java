@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMqPayment {
-    public static final String PAYMENT_EXCHANGE = "payemnt.exchange";
+    public static final String PAYMENT_EXCHANGE = "payment.exchange";
 
     public static final String PAYMENT_APPROVED_QUEUE = "payment.approved.queue";
     public static final String PAYMENT_APPROVED_ROUTING_KEY = "payment.approved";
@@ -23,7 +23,7 @@ public class RabbitMqPayment {
     public Queue paymentApprovedQueue() {
         return QueueBuilder.durable(PAYMENT_APPROVED_QUEUE)
                 .withArgument("x-dead-letter-exchange", "dlx.exchange")
-                .withArgument("x-dead-letter-routing-key", "order.created.dlq")
+                .withArgument("x-dead-letter-routing-key", "payment.approved.dlq")
                 .build();
     }
 
@@ -39,7 +39,7 @@ public class RabbitMqPayment {
     public Queue paymentFailedQueue() {
         return QueueBuilder.durable(PAYMENT_FAILED_QUEUE)
                 .withArgument("x-dead-letter-exchange", "dlx.exchange")
-                .withArgument("x-dead-letter-routing-key", "order.created.dlq")
+                .withArgument("x-dead-letter-routing-key", "payment.failed.dlq")
                 .build();
     }
 

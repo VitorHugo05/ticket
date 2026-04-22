@@ -1,11 +1,17 @@
 package com.vitordev.ticket.orders.service;
 
+import com.vitordev.ticket.events.messaging.RabbitMqEvent;
+import com.vitordev.ticket.orders.messaging.RabbitMqOrder;
 import com.vitordev.ticket.orders.model.IdempotencyKeyEntity;
 import com.vitordev.ticket.orders.model.OrderEntity;
 import com.vitordev.ticket.orders.model.dto.*;
 import com.vitordev.ticket.orders.model.enums.OrderStatus;
 import com.vitordev.ticket.orders.repository.IdempotencyRepository;
 import com.vitordev.ticket.orders.repository.OrderRepository;
+import com.vitordev.ticket.shared.exceptions.BadRequestArgumentException;
+import com.vitordev.ticket.shared.exceptions.DuplicateRequestException;
+import com.vitordev.ticket.shared.exceptions.InsufficientResourceException;
+import com.vitordev.ticket.shared.exceptions.ObjectNotFoundException;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -39,18 +45,19 @@ public class OrderService {
         }
     }
 
-    public EventDto getEvent(Long id){
+    public EventDto getEvent(Long id) {
         Object response = rabbitTemplate.convertSendAndReceive(
                 "event.exchange",
                 "event",
                 id
         );
 
-        String json = objectMapper.writeValueAsString(response);
+        if (response == null) {
+            throw new ObjectNotFoundException("Event not found");
+        }
 
-        EventDto eventDto = objectMapper.readValue(json, EventDto.class);
-        System.out.println(eventDto.toString());
-        return eventDto;
+        String json = objectMapper.writeValueAsString(response);
+        return objectMapper.readValue(json, EventDto.class);
     }
 
     @Transactional
@@ -59,20 +66,20 @@ public class OrderService {
         EventDto eventDto = getEvent(request.getEventId());
 
         if (idempotencyRepository.findByIdempotencyKey(key).isPresent()) {
-            throw new RuntimeException("Request already processed with this idempotency key");
+            throw new DuplicateRequestException("Request already processed with idempotency key");
         }
 
         String redisKey = "event:" + request.getEventId() + ":available";
 
         if (!jedis.exists(redisKey)) {
-            throw new RuntimeException("Event not found or not available");
+            throw new ObjectNotFoundException("Event not found or not available");
         }
 
         Long remaining = jedis.decrBy(redisKey, request.getQuantity());
 
         if (remaining < 0) {
             jedis.incrBy(redisKey, request.getQuantity());
-            throw new RuntimeException("No stock available");
+            throw new InsufficientResourceException("No stock available");
         }
 
         OrderEntity newOrder = new OrderEntity(
@@ -98,7 +105,9 @@ public class OrderService {
 
         idempotencyRepository.save(newKey);
 
-        rabbitTemplate.convertAndSend("order.created.exchange", "order.created",
+        rabbitTemplate.convertAndSend(
+                RabbitMqOrder.ORDER_EXCHANGE,
+                RabbitMqOrder.ORDER_CREATED_ROUTING_KEY,
                 new OrderCreatedMessage(savedOrder.getId(), savedOrder.getEventId(),
                         savedOrder.getUserId(), savedOrder.getQuantity(), savedOrder.getPrice(),
                         savedOrder.getExpiresAt()));
@@ -107,7 +116,7 @@ public class OrderService {
     }
 
     public OrderResponseDto findById(Long id) {
-        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found or not available"));
+        OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Order not found or not available"));
         return toDto(orderEntity);
     }
 
@@ -137,14 +146,17 @@ public class OrderService {
 
     public void update(Long id, OrderUpdateRequestDto request) {
         OrderEntity order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Order not found"));
+
+        if(order.getStatus() != OrderStatus.PENDING){
+            throw new BadRequestArgumentException("Order already processed.");
+        }
 
         String redisKey = "event:" + order.getEventId() + ":available";
 
         int oldQuantity = order.getQuantity();
-        int newQuantity = request.getQuantity();
 
-        int diff = newQuantity - oldQuantity;
+        int diff = request.getQuantity() - oldQuantity;
 
         if (diff < 0) {
             jedis.incrBy(redisKey, Math.abs(diff));
@@ -154,18 +166,25 @@ public class OrderService {
             Long remaining = jedis.decrBy(redisKey, diff);
             if (remaining < 0) {
                 jedis.incrBy(redisKey, diff);
-                throw new RuntimeException("No stock available");
+                throw new InsufficientResourceException("No stock available");
             }
         }
-        order.setQuantity(newQuantity);
+
+        order.setQuantity(request.getQuantity());
         order.setUpdatedAt(LocalDateTime.now());
+
+        rabbitTemplate.convertAndSend(
+                RabbitMqOrder.ORDER_EXCHANGE,
+                RabbitMqOrder.ORDER_UPDATE_ROUTING_KEY,
+                new OrderUpdatedMessage(order.getId(), request.getQuantity(), order.getPrice())
+        );
 
         orderRepository.save(order);
     }
 
     public void delete(Long id) {
         OrderEntity order = orderRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Order not found"));
+                .orElseThrow(() -> new ObjectNotFoundException("Order not found"));
         String redisKey = "event:" + order.getEventId() + ":available";
         jedis.incrBy(redisKey, order.getQuantity());
         orderRepository.deleteById(id);
@@ -173,7 +192,7 @@ public class OrderService {
 
     public void approvedPayment(PaymentApprovedMessage paymentApprovedMessage) {
         OrderEntity orderEntity = orderRepository.findById(paymentApprovedMessage.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found or not available"));
+                .orElseThrow(() -> new ObjectNotFoundException("Order not found or not available"));
 
         orderEntity.setStatus(OrderStatus.CONFIRMED);
         orderEntity.setUpdatedAt(LocalDateTime.now());
@@ -183,7 +202,7 @@ public class OrderService {
 
     public void failedPayment(PaymentFailedMessage paymentFailedMessage) {
         OrderEntity orderEntity = orderRepository.findById(paymentFailedMessage.getOrderId())
-                .orElseThrow(() -> new RuntimeException("Order not found or not available"));
+                .orElseThrow(() -> new ObjectNotFoundException("Order not found or not available"));
 
         String redisKey = "event:" + orderEntity.getEventId() + ":available";
 

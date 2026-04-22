@@ -6,13 +6,33 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class RabbitMqOrder {
-    public static final String ORDER_CREATED_EXCHANGE = "order.created.exchange";
+    public static final String ORDER_EXCHANGE = "order.exchange";
+
     public static final String ORDER_CREATED_QUEUE = "order.created.queue";
     public static final String ORDER_CREATED_ROUTING_KEY = "order.created";
 
+    public static final String ORDER_UPDATE_QUEUE = "order.update.queue";
+    public static final String ORDER_UPDATE_ROUTING_KEY = "order.update";
+
     @Bean
-    public DirectExchange orderCreatedExchange() {
-        return new DirectExchange(ORDER_CREATED_EXCHANGE);
+    public TopicExchange orderExchange() {
+        return new TopicExchange(ORDER_EXCHANGE);
+    }
+
+    @Bean
+    public Queue orderUpdateQueue() {
+        return QueueBuilder.durable(ORDER_UPDATE_QUEUE)
+                .withArgument("x-dead-letter-exchange", "dlx.exchange")
+                .withArgument("x-dead-letter-routing-key", "order.update.dlq")
+                .build();
+    }
+
+    @Bean
+    public Binding orderUpdateBinding() {
+        return BindingBuilder
+                .bind(orderUpdateQueue())
+                .to(orderExchange())
+                .with(ORDER_UPDATE_ROUTING_KEY);
     }
 
     @Bean
@@ -27,7 +47,7 @@ public class RabbitMqOrder {
     public Binding orderCreatedBinding() {
         return BindingBuilder
                 .bind(orderCreatedQueue())
-                .to(orderCreatedExchange())
+                .to(orderExchange())
                 .with(ORDER_CREATED_ROUTING_KEY);
     }
 }
