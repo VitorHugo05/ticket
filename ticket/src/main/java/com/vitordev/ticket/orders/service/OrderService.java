@@ -106,7 +106,6 @@ public class OrderService {
         return savedOrder;
     }
 
-
     public OrderResponseDto findById(Long id) {
         OrderEntity orderEntity = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found or not available"));
         return toDto(orderEntity);
@@ -170,5 +169,29 @@ public class OrderService {
         String redisKey = "event:" + order.getEventId() + ":available";
         jedis.incrBy(redisKey, order.getQuantity());
         orderRepository.deleteById(id);
+    }
+
+    public void approvedPayment(PaymentApprovedMessage paymentApprovedMessage) {
+        OrderEntity orderEntity = orderRepository.findById(paymentApprovedMessage.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found or not available"));
+
+        orderEntity.setStatus(OrderStatus.CONFIRMED);
+        orderEntity.setUpdatedAt(LocalDateTime.now());
+
+        orderRepository.save(orderEntity);
+    }
+
+    public void failedPayment(PaymentFailedMessage paymentFailedMessage) {
+        OrderEntity orderEntity = orderRepository.findById(paymentFailedMessage.getOrderId())
+                .orElseThrow(() -> new RuntimeException("Order not found or not available"));
+
+        String redisKey = "event:" + orderEntity.getEventId() + ":available";
+
+        jedis.incrBy(redisKey, orderEntity.getQuantity());
+
+        orderEntity.setStatus(OrderStatus.FAILED);
+        orderEntity.setUpdatedAt(LocalDateTime.now());
+
+        orderRepository.save(orderEntity);
     }
 }

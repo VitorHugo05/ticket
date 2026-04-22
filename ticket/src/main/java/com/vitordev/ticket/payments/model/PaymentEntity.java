@@ -1,5 +1,6 @@
 package com.vitordev.ticket.payments.model;
 
+import com.vitordev.ticket.payments.model.enums.PaymentMethods;
 import com.vitordev.ticket.payments.model.enums.PaymentStatus;
 import jakarta.persistence.*;
 
@@ -19,19 +20,22 @@ public class PaymentEntity {
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
 
+    @Enumerated(EnumType.STRING)
+    private PaymentMethods method;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-
     private LocalDateTime expiresAt;
 
     public PaymentEntity() {
     }
 
-    public PaymentEntity(Long id, Long orderId, Double amount, PaymentStatus status, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt) {
+    public PaymentEntity(Long id, Long orderId, Double amount, PaymentStatus status, PaymentMethods method, LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime expiresAt) {
         this.id = id;
         this.orderId = orderId;
         this.amount = amount;
         this.status = status;
+        this.method = method;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.expiresAt = expiresAt;
@@ -43,6 +47,14 @@ public class PaymentEntity {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public PaymentMethods getMethod() {
+        return method;
+    }
+
+    public void setMethod(PaymentMethods method) {
+        this.method = method;
     }
 
     public Long getOrderId() {
