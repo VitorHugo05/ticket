@@ -3,7 +3,7 @@ package com.vitordev.ticket.events.controllers;
 import com.vitordev.ticket.events.model.dto.EventRequestDto;
 import com.vitordev.ticket.events.model.dto.EventResponseDto;
 import com.vitordev.ticket.events.model.dto.EventUpdateRequestDto;
-import com.vitordev.ticket.events.model.entities.EventEntity;
+import com.vitordev.ticket.events.model.EventEntity;
 import com.vitordev.ticket.events.services.EventService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -14,9 +14,28 @@ public class RabbitMqOrder {
     public static final String ORDER_UPDATE_QUEUE = "order.update.queue";
     public static final String ORDER_UPDATE_ROUTING_KEY = "order.update";
 
+    public static final String ORDER_CONFIRMED_QUEUE = "order.confirmed.queue";
+    public static final String ORDER_CONFIRMED_ROUTING_KEY = "order.confirmed";
+
     @Bean
     public TopicExchange orderExchange() {
         return new TopicExchange(ORDER_EXCHANGE);
+    }
+
+    @Bean
+    public Queue orderConfirmedQueue() {
+        return QueueBuilder.durable(ORDER_CONFIRMED_QUEUE)
+                .withArgument("x-dead-letter-exchange", "dlx.exchange")
+                .withArgument("x-dead-letter-routing-key", "order.confirmed.dlq")
+                .build();
+    }
+
+    @Bean
+    public Binding orderConfirmedBinding() {
+        return BindingBuilder
+                .bind(orderConfirmedQueue())
+                .to(orderExchange())
+                .with(ORDER_CONFIRMED_ROUTING_KEY);
     }
 
     @Bean

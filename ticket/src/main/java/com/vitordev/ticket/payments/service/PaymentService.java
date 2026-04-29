@@ -73,7 +73,7 @@ public class PaymentService {
             rabbitTemplate.convertAndSend(
                     RabbitMqPayment.PAYMENT_EXCHANGE,
                     RabbitMqPayment.PAYMENT_APPROVED_ROUTING_KEY,
-                    new PaymentFailedMessage(paymentEntity.getId(), paymentEntity.getOrderId(), paymentEntity.getAmount(), LocalDateTime.now())
+                    new PaymentApprovedMessage(paymentEntity.getId(), paymentEntity.getOrderId(), paymentEntity.getAmount(), LocalDateTime.now())
             );
             return new PaymentResponseDto(System.currentTimeMillis(), PaymentStatus.APPROVED, "Approved");
         }

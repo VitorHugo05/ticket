@@ -4,7 +4,8 @@ import com.vitordev.ticket.events.messaging.RabbitMqEvent;
 import com.vitordev.ticket.events.model.dto.EventMessage;
 import com.vitordev.ticket.events.model.dto.EventRequestDto;
 import com.vitordev.ticket.events.model.dto.EventUpdateRequestDto;
-import com.vitordev.ticket.events.model.entities.EventEntity;
+import com.vitordev.ticket.events.model.EventEntity;
+import com.vitordev.ticket.events.model.dto.OrderConfirmedMessage;
 import com.vitordev.ticket.events.repository.EventRepository;
 import com.vitordev.ticket.shared.exceptions.BadRequestArgumentException;
 import com.vitordev.ticket.shared.exceptions.ObjectNotFoundException;
@@ -85,5 +86,13 @@ public class EventService {
     public void delete(Long id) {
         findById(id);
         eventRepository.deleteById(id);
+    }
+
+    public void orderConfirmed(OrderConfirmedMessage orderConfirmedMessage) {
+        EventEntity eventEntity = eventRepository.findById(orderConfirmedMessage.getEventId())
+                .orElseThrow(() -> new ObjectNotFoundException("Object not found"));
+        eventEntity.setSold(eventEntity.getSold() + orderConfirmedMessage.getQuantity());
+
+        eventRepository.save(eventEntity);
     }
 }

@@ -1,4 +1,4 @@
-package com.vitordev.ticket.events.model.entities;
+package com.vitordev.ticket.events.model;
 
 import jakarta.persistence.*;
 

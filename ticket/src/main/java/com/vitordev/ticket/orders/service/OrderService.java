@@ -197,6 +197,12 @@ public class OrderService {
         orderEntity.setStatus(OrderStatus.CONFIRMED);
         orderEntity.setUpdatedAt(LocalDateTime.now());
 
+        rabbitTemplate.convertAndSend(
+                RabbitMqOrder.ORDER_EXCHANGE,
+                RabbitMqOrder.ORDER_CONFIRMED_ROUTING_KEY,
+                new OrderConfirmedMessage(orderEntity.getQuantity(), orderEntity.getEventId())
+        );
+
         orderRepository.save(orderEntity);
     }
 

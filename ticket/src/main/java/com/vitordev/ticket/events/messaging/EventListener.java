@@ -1,7 +1,8 @@
 package com.vitordev.ticket.events.messaging;
 
 import com.vitordev.ticket.events.model.dto.EventDto;
-import com.vitordev.ticket.events.model.entities.EventEntity;
+import com.vitordev.ticket.events.model.EventEntity;
+import com.vitordev.ticket.events.model.dto.OrderConfirmedMessage;
 import com.vitordev.ticket.events.services.EventService;
 import com.vitordev.ticket.shared.exceptions.ObjectNotFoundException;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -21,5 +22,10 @@ public class EventListener {
         } catch (ObjectNotFoundException e) {
             return null;
         }
+    }
+
+    @RabbitListener(queues = "order.confirmed.queue")
+    public void orderConfirmed(OrderConfirmedMessage orderConfirmedMessage){
+        eventService.orderConfirmed(orderConfirmedMessage);
     }
 }

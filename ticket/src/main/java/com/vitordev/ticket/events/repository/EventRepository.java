@@ -1,6 +1,6 @@
 package com.vitordev.ticket.events.repository;
 
-import com.vitordev.ticket.events.model.entities.EventEntity;
+import com.vitordev.ticket.events.model.EventEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
